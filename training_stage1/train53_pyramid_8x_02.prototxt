@@ -1,0 +1,408 @@
+layer {
+  name: "data"
+  type: "CPMData"
+  top: "data"
+  top: "label"
+  data_param {
+    # 190 2 pic
+    source:"/mnt/nfs/zzwu/02_train/zjz-multi-pose_bak/Realtime_Multi-Person_Pose_Estimation-master/training/dataset/20190828/parking_key_point0828_lmdb"
+   
+    batch_size: 1
+    backend: LMDB
+  }
+  cpm_transform_param {
+    stride: 8
+    max_rotate_degree: 0
+    visualize: false
+    crop_size_x: 96
+    crop_size_y: 300
+    
+    scale_min: 1
+    scale_max: 1
+    scale_prob: 1
+    
+    target_dist: 1
+    center_perterb_max: 0
+    do_clahe: false
+    num_parts: 22
+    np_in_lmdb: 6
+  }
+}
+layer {
+  name: "vec_weight"
+  type: "Slice"
+  bottom: "label"
+  top: "vec_weight"
+  top: "heat_weight"
+  top: "vec_temp"
+  top: "heat_temp"
+  slice_param {
+    slice_point: 16
+    slice_point: 23
+    slice_point: 39
+    axis: 1
+  }
+}
+
+layer {
+  name: "label_heat"
+  type: "Eltwise"
+  bottom: "heat_weight"
+  bottom: "heat_temp"
+  top: "label_heat"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "image"
+  type: "Slice"
+  bottom: "data"
+  top: "image"
+  top: "center_map"
+  slice_param {
+    slice_point: 3
+    axis: 1
+  }
+}
+layer {
+  name: "silence2"
+  type: "Silence"
+  bottom: "center_map"
+  bottom: "vec_weight"
+  bottom: "vec_temp"
+  bottom:"heat_temp"
+}
+layer {
+  name: "conv1_1_new"
+  type: "Convolution"
+  bottom: "image"
+  top: "conv1_1_new"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 8
+    pad: 1
+    kernel_size: 3
+    weight_filler {
+      type: "msra"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "relu1_1_new"
+  type: "ReLU"
+  bottom: "conv1_1_new"
+  top: "conv1_1_new"
+}
+
+layer {
+  name: "pool1_stage1_new"
+  type: "Pooling"
+  bottom: "conv1_1_new"
+  top: "pool1_stage1_new"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  name: "conv2_1_new"
+  type: "Convolution"
+  bottom: "pool1_stage1_new"
+  top: "conv2_1_new"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 16
+    pad: 1
+    kernel_size: 3
+    weight_filler {
+      type: "msra"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "relu2_1_new"
+  type: "ReLU"
+  bottom: "conv2_1_new"
+  top: "conv2_1_new"
+}
+
+layer {
+  name: "pool2_stage1_new"
+  type: "Pooling"
+  bottom: "conv2_1_new"
+  top: "pool2_stage1_new"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  name: "conv3_1_new"
+  type: "Convolution"
+  bottom: "pool2_stage1_new"
+  top: "conv3_1_new"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 32
+    #pad: 1
+    pad_h:0
+    pad_w:1
+    kernel_size: 3
+    weight_filler {
+      type: "msra"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "relu3_1_new"
+  type: "ReLU"
+  bottom: "conv3_1_new"
+  top: "conv3_1_new"
+}
+
+
+layer {
+  name: "conv4_1_new"
+  type: "Convolution"
+  bottom: "conv3_1_new"
+  top: "conv4_1_new"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 32
+    pad: 1
+    #pad_h: 2
+    #pad_w: 1
+    kernel_size: 3
+    weight_filler {
+      type: "msra"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+layer {
+  name: "relu4_1_new"
+  type: "ReLU"
+  bottom: "conv4_1_new"
+  top: "conv4_1_new"
+}
+
+
+layer {
+  name: "pool3_stage1_new"
+  type: "Pooling"
+  bottom: "conv4_1_new"
+  top: "pool3_stage1_new"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+
+##########################################################################
+layer {
+  name: "conv4_pool1"
+  type: "Pooling"
+  bottom: "conv4_1_new"
+  top: "conv4_pool1"
+  pooling_param {
+    pool: AVE
+    kernel_h: 37
+    kernel_w: 12
+    stride_h: 37
+    stride_w: 12
+  }
+}
+
+layer {
+  name: "conv4_pool1_interp"
+  type: "Interp"
+  bottom: "conv4_pool1"
+  top: "conv4_pool1_interp"
+  interp_param {
+    height: 37
+    width: 12
+  }
+}
+
+layer {
+  name: "conv4_pool2"
+  type: "Pooling"
+  bottom: "conv4_1_new"
+  top: "conv4_pool2"
+  pooling_param {
+    pool: AVE
+    kernel_h: 19
+    kernel_w: 6
+    stride_h: 19
+    stride_w: 6
+  }
+}
+
+layer {
+  name: "conv4_pool2_interp"
+  type: "Interp"
+  bottom: "conv4_pool2"
+  top: "conv4_pool2_interp"
+  interp_param {
+    height: 37
+    width: 12
+  }
+}
+
+layer {
+  name: "conv4_pool3"
+  type: "Pooling"
+  bottom: "conv4_1_new"
+  top: "conv4_pool3"
+  pooling_param {
+    pool: AVE
+    kernel_h: 9
+    kernel_w: 3
+    stride_h: 9
+    stride_w: 3
+  }
+}
+
+layer {
+  name: "conv4_pool3_interp"
+  type: "Interp"
+  bottom: "conv4_pool3"
+  top: "conv4_pool3_interp"
+  interp_param {
+    height: 37
+    width: 12
+  }
+}
+
+layer {
+  name: "conv4_pool4"
+  type: "Pooling"
+  bottom: "conv4_1_new"
+  top: "conv4_pool4"
+  pooling_param {
+    pool: AVE
+    kernel_h: 3
+    kernel_w: 1
+    stride_h: 3
+    stride_w: 1
+  }
+}
+
+layer {
+  name: "conv4_pool4_interp"
+  type: "Interp"
+  bottom: "conv4_pool4"
+  top: "conv4_pool4_interp"
+  interp_param {
+    height: 37
+    width: 12
+  }
+}
+
+layer {
+  name: "conv4_concat"
+  type: "Concat"
+  bottom: "pool3_stage1_new"
+  bottom: "conv4_pool1_interp"
+  bottom: "conv4_pool2_interp"
+  bottom: "conv4_pool3_interp"
+  bottom: "conv4_pool4_interp"
+  top: "conv4_concat"
+}
+
+##########################################################################
+
+
+
+layer {
+  name: "conv5_5_CPM_L2"
+  type: "Convolution"
+  bottom: "conv4_concat"
+  top: "conv5_5_CPM_L2"
+  param {
+    lr_mult: 1.0
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2.0
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 7
+    pad: 0
+    kernel_size: 1
+    weight_filler {
+      type: "msra"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+layer {
+  name: "weight_stage1_L2"
+  type: "Eltwise"
+  bottom: "conv5_5_CPM_L2"
+  bottom: "heat_weight"
+  top: "weight_stage1_L2"
+  eltwise_param {
+    operation: PROD
+  }
+}
+layer {
+  name: "loss_stage1_L2"
+  type: "EuclideanLoss"
+  bottom: "weight_stage1_L2"
+  bottom: "label_heat"
+  top: "loss_stage1_L2"
+  loss_weight: 1
+}

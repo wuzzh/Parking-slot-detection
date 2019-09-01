@@ -1,0 +1,77 @@
+[param]
+
+# CPU mode or GPU mode
+use_gpu = 0
+
+# GPU device number (doesn't matter for CPU mode)
+GPUdeviceNumber = 1
+
+# Select model (default: 1)
+modelID = 1
+
+# Look in matlab counterpart for explanation
+octave = 3
+
+
+#starting_range = 0.8
+#ending_range = 2
+
+starting_range = 1
+ending_range = 1
+scale_search = 1
+#scale_search = 0.5,0.7,0.9,1
+#scale_search = 1,1.2,1.3,1.4
+#scale_search = 0.5, 1, 1.5, 2
+
+#hre1 = 0.01
+#hre2 = 0.01 
+#hre3 = 0.5
+#hre4 = 0.01
+
+thre1 = 0.5
+
+thre2 = 0.01
+thre3 = 0.1
+thre4 = 0.01
+
+min_num = 4
+mid_num = 10
+crop_ratio = 2.5
+bbox_ratio = 0.25
+
+
+
+# 1pic
+
+connection_path = './output_20190828/connection/'
+#heatmap_path = './output/brick_R/heatmap/'
+heatpaf_path = './output_20190828/heatpaf/'
+
+
+# 1pic_oblique
+
+#img_path = '/mnt/nfs/zzwu/02_train/zjz-multi-pose_bak/Realtime_Multi-Person_Pose_Estimation-master/training/dataset/20180915/all_img/'
+img_path = '/mnt/nfs/zzwu/02_train/zjz-multi-pose_bak/Realtime_Multi-Person_Pose_Estimation-master/training/dataset/20190828/parking_key_point20190828'
+key_point_path = './output_20190828'
+heatmap_path = './output_20190828''
+
+[models]
+## don't edit this part
+
+[[1]]
+#caffemodel = '../parking_models/parking_point_iter_10000.caffemodel'
+
+caffemodel='/mnt/nfs/zzwu/02_train/zjz-multi-pose_bak/Realtime_Multi-Person_Pose_Estimation-master/training/parking_model_20190828/20190828_test_key_point_upsampling_iter_50000.caffemodel'
+
+deployFile = '../parking_models/train50_pyramid_8x_upsampling_deploy_04.prototxt'
+
+
+
+description = 'arrow ose4Two-level Linevec'
+boxsize = 300
+padValue = 128
+np = 6  #parking 6,arrow 3
+nc = 16 #parking 16, arrow 4
+#stride = 2
+stride = 8 
+ part_str= [forward, mid, back,bg]
